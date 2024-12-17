@@ -5,7 +5,7 @@ import { checkGuess } from "../utils/logic";
 import { checkWord } from "../utils/wordValidation";
 
 
-function WordleGame() {
+function WordCrazeGame({animationTime}) {
   const [guesses, setGuesses] = useState([]); // Array of attempted guesses
   const [currentGuess, setCurrentGuess] = useState("");
   const [solution, setSolution] = useState(""); // Solution word to guess
@@ -15,10 +15,14 @@ function WordleGame() {
   const [guessedLetters, setGuessedLetters] = useState({});
   const [gameOver, setGameOver] = useState(false);
   const [win, setWin] = useState(false);
+  const [shakeRowIndex, setShakeRowIndex] = useState(null);
+  const [cellIndex, setCellIndex] = useState(null);
+  const [animateCells, setAnimateCells] = useState(false);
 
   useEffect(() => {
     fetchNewWord();
   }, []);
+
 
   // Fetch word from API when the component is first rendered
   async function fetchNewWord() {
@@ -32,7 +36,6 @@ function WordleGame() {
   
       const data = await response.json();
       if (Array.isArray(data) && data.length > 0) {
-        showToast(data[0]);
         const wordChecker = await checkWord(data[0]); 
 
         if(wordChecker.isValid){
@@ -44,8 +47,8 @@ function WordleGame() {
       } else {
         throw new Error("No word returned from API");
       }
-  
       setLoading(false);
+      setCellIndex(0);
     } catch (err) {
       console.error("Error fetching word:", err);
       setError(err.message);
@@ -76,25 +79,34 @@ function WordleGame() {
                 } else if (guesses.length + 1 >= 6) {
                     handleLoss();
                 }
+                setCurrentGuess("");    
+                setCellIndex(0); // Prevent going below 0
+                showToast("Word: " + solution);
+                setAnimateCells(true);
+                setTimeout(() => {
+                    setAnimateCells(false);
+                  }, animationTime); // Wait for the animation
             }
             else{
+                triggerShake();
                 showToast("Invalid word!");
             }
-        showToast("Word: " + solution);
-        setCurrentGuess("");
       }
     } else if (key === "Backspace") {
-      setCurrentGuess(currentGuess.slice(0, -1));
+      setCurrentGuess(currentGuess.slice(0, -1));    
+      setCellIndex(prevIndex => Math.max(0, prevIndex - 1)); // Prevent going below 0
     } else if (currentGuess.length < 5 && /^[a-zA-Z]$/.test(key)) {
-      setCurrentGuess(currentGuess + key.toUpperCase());
+        setCurrentGuess(currentGuess + key.toUpperCase());
+        setCellIndex(prevIndex => Math.min(4, prevIndex + 1)); // Prevent going above index 4
     }
   };
 
   const handleWin = () => {
     setGameOver(true);
     setWin(true);
+    setCurrentGuess("")
     saveStats({ won: true });
-    showToast("🎉 You Won! 🎉");
+    showToast("Congratulations! 🎉 You Won! 🎉");
   };
 
   const handleLoss = () => {
@@ -102,6 +114,11 @@ function WordleGame() {
     setWin(false);
     saveStats({ won: false });
     showToast("😔 You Lost!");
+  };
+
+  const triggerShake = () => {
+    setShakeRowIndex(guesses.length); // Trigger shake for the latest guess row
+    setTimeout(() => setShakeRowIndex(null), 30000); // Clear shake after animation duration
   };
 
   const saveStats = ({ won }) => {
@@ -141,41 +158,41 @@ function WordleGame() {
   const showToast = (message) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(""), 3000); // Clear toast after 3 seconds
-  };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+    // alert(message); // Replace this with better toast handling later if needed
+  };
 
   return (
     <div>
-      <h1>Wordle Clone</h1>
-      
+       {loading && <p>Loading...</p>}
+       {error && <p>Error: {error}</p>}
+
+      {/* Game Title */}
+      {/* <h1>Wordle Clone</h1> */}
+    
       {/* Toast Notification */}
       {toastMessage && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "20px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            padding: "10px 20px",
-            backgroundColor: "#f44336",
-            color: "white",
-            borderRadius: "4px",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-            zIndex: 1000,
-          }}
-        >
+        <div style={styles.toast}>
           {toastMessage}
         </div>
       )}
 
-      <Grid guesses={guesses} currentGuess={currentGuess} />
+      <Grid guesses={guesses} currentGuess={currentGuess} shakeRowIndex={shakeRowIndex} cellIndex={cellIndex} animateCells={animateCells} animationTime={animationTime} />
       <Keyboard handleKeyPress={handleKeyPress} guessedLetters={guessedLetters} />
 
       {gameOver && (
         <div style={styles.modal}>
-          <p>{win ? "🎉 You Won! 🎉" : "😔 You Lost! 😔"}</p>
+          <p>
+            {win ? (
+                <>
+                Congratulations! <br /> 🎉 You Won! 🎉
+                </>
+            ) : (
+                <>
+                😔 You Lost! 😔
+                </>
+            )}
+          </p>
           <button onClick={restartGame} style={styles.button}>
             Restart Game
           </button>
@@ -183,13 +200,14 @@ function WordleGame() {
       )}
     </div>
   );
+   
 }
 
 const styles = {
     modal: {
       position: "fixed",
-      top: "50%",
-      left: "50%",
+      top: "45%",
+      left: "65%",
       transform: "translate(-50%, -50%)",
       backgroundColor: "white",
       padding: "20px",
@@ -206,6 +224,18 @@ const styles = {
       borderRadius: "4px",
       cursor: "pointer",
     },
+    toast: {
+        position: "fixed",
+        bottom: "20px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        padding: "10px 20px",
+        backgroundColor: "#f44336",
+        color: "white",
+        borderRadius: "4px",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+        zIndex: 1000,
+    }
 };
 
-export default WordleGame;
+export default WordCrazeGame;
