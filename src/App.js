@@ -2,17 +2,22 @@ import logo from './logo.svg';
 import './App.css';
 import WordCrazeGame from "./components/WordCrazeGame";
 import './styles/styles.css';
+import { GameStatsDisplay, useStats, saveStats } from "./components/GameStats";
 import React, { useState, useEffect } from "react";
 
 
 function App() {
   const [showStartButton, setShowStartButton] = useState(true);
   const [animationTime] = useState(1000)
+  const {stats, setStats } = useStats();
+
 
   // Listen for keyboard events
   useEffect(() => {
     const handlePhysicalKeyPress = (event) => {
-      handleStartGame();
+      if (event.key === "Enter" && showStartButton) {
+        handleStartGame();
+      }    
     };
 
     window.addEventListener("keydown", handlePhysicalKeyPress);
@@ -21,7 +26,7 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handlePhysicalKeyPress);
     };
-  }, []); 
+  }, [showStartButton]); 
 
   const handleStartGame = () => {
     setShowStartButton(false); // Switch to game UI
@@ -35,15 +40,16 @@ function App() {
           A fun word-guessing game inspired by Wordle. Can you guess the word in 6 attempts or less?
         </p>
       </div>
-        
+      
+      {/* Include Game Stats Display */}
+      {/* <GameStatsDisplay stats={stats}/> */}
+
       {showStartButton ? (
           <button onClick={handleStartGame} style={styles.startButton}>
           Start Game
         </button>
       ) : (
-        <>
         <WordCrazeGame animationTime={animationTime}/>
-        </>
       )}
     </div>
   );
