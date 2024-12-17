@@ -92,7 +92,11 @@ function WordCrazeGame({animationTime}) {
                 showToast("Invalid word!");
             }
       }
-    } else if (key === "Backspace") {
+    }
+    else if(key === "Enter" && gameOver){
+      restartGame();
+    }
+    else if (key === "Backspace") {
       setCurrentGuess(currentGuess.slice(0, -1));    
       setCellIndex(prevIndex => Math.max(0, prevIndex - 1)); // Prevent going below 0
     } else if (currentGuess.length < 5 && /^[a-zA-Z]$/.test(key)) {

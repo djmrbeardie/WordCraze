@@ -70,7 +70,7 @@ function Grid({ guesses, currentGuess , shakeRowIndex, cellIndex, animateCells, 
                     borderStyle: isCurrentRow && colIndex === cellIndex ? "dashed" : "solid", // Apply dashed except for excluded cell
                     // transform: rowToAnimate ? "rotateX(360deg)" : "rotateX(0)",
                     // transition: "transform 0.3s ease-in",  
-                    transform: rowToAnimate && flippingIndexes.includes(colIndex) ? "rotateX(90deg)" : "rotateX(0)",
+                    transform: rowToAnimate && flippingIndexes.includes(colIndex) ? "rotateX(-90deg)" : "rotateX(0)",
                     transition: "transform 0.4s ease-in",
                 }}
                 >
