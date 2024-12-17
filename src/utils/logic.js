@@ -23,4 +23,4 @@ export function checkGuess(solution, guess) {
   
     return feedback;
   }
-  
+
