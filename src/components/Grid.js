@@ -25,7 +25,7 @@ function Grid({ guesses, currentGuess , shakeRowIndex, cellIndex, animateCells, 
       }, [animateCells, guesses, animationTime]);
     
   return (
-    <div style={{ marginBottom: "20px" }}>
+    <div style={{ /*marginBottom: "20px"*/  marginBottom: "0vw" }}>
       {Array.from({ length: 6 }).map((_, rowIndex) => {
         const guessToShow = guesses[rowIndex]?.guess || (rowIndex === guesses.length ? currentGuess : "");
         const isShaking = shakeRowIndex === rowIndex; // Determine if this row should shake
@@ -39,7 +39,8 @@ function Grid({ guesses, currentGuess , shakeRowIndex, cellIndex, animateCells, 
             style={{
               display: "flex",
               justifyContent: "center",
-              marginBottom: "8px",
+              marginBottom: "0.3vw",
+              // marginBottom: "8px",
             }}
           >
             {Array.from({ length: 5 }).map((_, colIndex) => {
@@ -50,14 +51,19 @@ function Grid({ guesses, currentGuess , shakeRowIndex, cellIndex, animateCells, 
                 <div
                   key={colIndex}
                   style={{
-                    width: "40px",
-                    height: "40px",
-                    border: "1px solid #000",
+                    width: "3vw",
+                    // width: "40px",
+                    height: "3vw",
+                    // height: "40px",
+                    border: "0.1vw solid #000",
+                    // border: "1px solid #000",
                     display: "flex",
-                    borderRadius: "5px",
+                    borderRadius: "0.3vw",
+                    // borderRadius: "5px",
                     justifyContent: "center",
                     alignItems: "center",
-                    marginRight: "4px",
+                    marginRight: "0.3vw",
+                    // marginRight: "4px",
                     backgroundColor:
                       feedback === "correct"
                         ? "green"
@@ -66,7 +72,8 @@ function Grid({ guesses, currentGuess , shakeRowIndex, cellIndex, animateCells, 
                         : feedback === "absent"
                         ? "lightgray"
                         : "white",
-                    fontSize: "20px",
+                    fontSize: "1.8vw",
+                    // fontSize: "20px",
                     fontWeight: "bold",
                     borderStyle: isCurrentRow && colIndex === cellIndex ? "dashed" : "solid", // Apply dashed except for excluded cell
                     // transform: rowToAnimate ? "rotateX(360deg)" : "rotateX(0)",

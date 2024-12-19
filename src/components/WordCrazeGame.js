@@ -130,8 +130,8 @@ function WordCrazeGame({ animationTime }) {
   const handleLoss = (points) => {
     setGameOver(true);
     setWin(false);
-    saveStats({ won: false, stats, setStats, word: solution, points , guesses: guesses.length + 1}); // Save stats with points
-    showToast("😔 You Lost!");
+    saveStats({ won: false, stats, setStats, word: solution, points, guesses: guesses.length + 1 }); // Save stats with points
+    showToast("😔 You Lost! Word is: " + solution);
   };
 
   const calculatePoints = () => {
@@ -192,22 +192,45 @@ function WordCrazeGame({ animationTime }) {
       )}
 
       <div style={styles.gameArea}>
-        {loading && <p>Loading...</p>}
-        {error && <p>Error: {error}</p>}
-        <Grid
-          guesses={guesses}
-          currentGuess={currentGuess}
-          shakeRowIndex={shakeRowIndex}
-          cellIndex={cellIndex}
-          animateCells={animateCells}
-          animationTime={animationTime}
-        />
-        <Keyboard handleKeyPress={handleKeyPress} guessedLetters={guessedLetters} />
+        {loading && <p style={styles.modal}>Loading...</p>}
+        {error && <p style={styles.modal}>Error: {error}</p>}
+        <div style={styles.flexContainer}>
+          {/* Most Recent Win Section */}
+          {stats.wins.length > 0 && (
+            <div style={styles.recentWinContainer}>
+              <h3 style={styles.heading}>Most Recent Win</h3>
+              <div style={styles.recentWinDetails}>
+                <span style={styles.word}>Word: {stats.wins[0].word}</span>
+                <span style={styles.points}>Points: {stats.wins[0].points}</span>
+                <span style={styles.guesses}>Guesses: {stats.wins[0].guesses}</span>
+              </div>
+            </div>
+          )}
+          <div style={styles.gameContent}>
+          <div style={styles.gridContainer}>
+            {/* Grid and Keyboard in Flex Layout */}
+            <div style={styles.gridContainer}>
+              <Grid
+                guesses={guesses}
+                currentGuess={currentGuess}
+                shakeRowIndex={shakeRowIndex}
+                cellIndex={cellIndex}
+                animateCells={animateCells}
+                animationTime={animationTime}
+              />
+            </div>
+          </div>
+          <div style={styles.keyboardContainer}>
+            <Keyboard handleKeyPress={handleKeyPress} guessedLetters={guessedLetters} />
+          </div>
+        </div>
       </div>
+      </div>
+
 
       {/* Right Sidebar for Definitions */}
       <div style={styles.definitionArea}>
-        <h3>Word Definition: {guesses[guesses.length - 1]?.guess}</h3>
+        <h3 style={styles.heading}>Word Definition: {guesses[guesses.length - 1]?.guess}</h3>
         <div style={styles.definitionBox}>
           {definitions && definitions.length > 0 ? (
             <ul style={styles.definitionList}>
@@ -216,9 +239,10 @@ function WordCrazeGame({ animationTime }) {
               ))}
             </ul>
           ) : (
-            <p>No definition available.</p>
+            <p style={styles.definitionList}>No definition available.</p>
           )}
         </div>
+
         {/* Include Game Stats Display */}
         <GameStatsDisplay stats={stats} />
       </div>
@@ -232,7 +256,7 @@ function WordCrazeGame({ animationTime }) {
               </>
             ) : (
               <>
-                😔 You Lost! 😔
+                😔 You Lost! 😔 <br /> Word is <span style={styles.word}> {solution} </span>
               </>
             )}
           </p>
@@ -246,70 +270,161 @@ function WordCrazeGame({ animationTime }) {
 }
 
 const styles = {
-    modal: {
-      position: "fixed",
-      top: "45%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      backgroundColor: "white",
-      padding: "20px",
-      boxShadow: "0px 4px 8px rgba(0,0,0,0.2)",
-      zIndex: 1000,
-      textAlign: "center",
-    },
-    button: {
-      marginTop: "10px",
-      padding: "10px",
-      backgroundColor: "#007BFF",
-      border: "none",
-      color: "white",
-      borderRadius: "4px",
-      cursor: "pointer",
-    },
-    toast: {
-        position: "fixed",
-        bottom: "20px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        padding: "10px 20px",
-        backgroundColor: "#f44336",
-        color: "white",
-        borderRadius: "4px",
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-        zIndex: 1000,
-    },
-    container: {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      padding: "20px",
-    },
-    gameArea: {
-      flex: 3.5,
-      display: "flex",
-      flexDirection: "column",
-      // gap: "20px",
-    },
-    definitionArea: {
-      flex: 2,
-      padding: "10px",
-      borderLeft: "1px solid #000",
-      backgroundColor: "#f8f9fa",
-      fontSize: "16px",
-    },
-    definitionBox: {
-      marginTop: "10px",
-      padding: "10px",
-      border: "1px solid #333",
-      borderRadius: "5px",
-      height: "250px",
-      overflowY: "auto",
-    },
-    definitionList: {
-      listStyleType: "bullet", // Use default bullet points | disc
-      paddingLeft: "20px",
-      fontSize: "16px",
-    },
+  modal: {
+    position: "fixed",
+    top: "45%",
+    left: "55%",
+    transform: "translate(-50%, -50%)",
+    backgroundColor: "white",
+    padding: "2vw",
+    // padding: "20px",
+    boxShadow: "0vw 0.2vw 0.4vw rgba(0, 0, 0, 0.2)",
+    // boxShadow: "0px 4px 8px rgba(0,0,0,0.2)",
+    zIndex: 1000,
+    textAlign: "center",
+  },
+  button: {
+    marginTop: "0.7vw",
+    // marginTop: "10px",
+    padding: "0.8vw",
+    // padding: "10px",
+    backgroundColor: "#007BFF",
+    border: "none",
+    color: "white",
+    borderRadius: "0.2vw",
+    // borderRadius: "4px",
+    cursor: "pointer",
+  },
+  toast: {
+    position: "fixed",
+    bottom: "0.2vw",
+    // bottom: "20px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    padding: "0.7vw 1.5vw",
+    // padding: "10px 20px",
+    backgroundColor: "#f44336",
+    color: "white",
+    borderRadius: "0.2vw",
+    // borderRadius: "4px",
+    boxShadow: "0vw 0.2vw 0.4vw rgba(0, 0, 0, 0.2)",
+    // boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+    zIndex: 1000,
+  },
+  container: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: "1.3vw",
+    // padding: "20px",
+  },
+  gameArea: {
+    flex: 3.5,
+    display: "flex",
+    flexDirection: "column",
+    gap: "2vw",
+    // gap: "20px",
+  },
+  recentWinContainer: {
+    backgroundColor: "#f8f9fa",
+    padding: "1.2vw",
+    // padding: "15px",
+    borderRadius: "0.5vw",
+    // borderRadius: "8px",
+    boxShadow: "0vw 0.2vw 0.4vw rgba(0, 0, 0, 0.1)",
+    // boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+    // marginBottom: "20px", // Add some spacing from other elements
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
+  recentWinDetails: {
+    display: "flex",
+    flexDirection: "column", // Stack details vertically
+    alignItems: "flex-start",
+  },
+  word: {
+    fontSize: "1.1vw",
+    // fontSize: "16px",
+    fontWeight: "600", // Emphasize the word
+    marginBottom: "0.3vw",
+    // marginBottom: "5px",
+    color: "#007BFF", // Blue color for the word
+  },
+  points: {
+    fontSize: "1vw",
+    // fontSize: "14px",
+    marginBottom: "0.3vw",
+    // marginBottom: "5px",
+    color: "#28a745", // Green color for points
+  },
+  guesses: {
+    fontSize: "1vw",
+    // fontSize: "14px",
+    color: "#6c757d", // Gray color for guesses
+  },
+  flexContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "2vw",
+    // gap: "20px", // Space between grid and keyboard
+  },
+  gameContent: {
+    display: "flex",
+    flexDirection: "column",  // Stack Grid and Keyboard vertically
+    flex: 1,                  // Allow it to take up remaining space
+    gap: "1vw",
+    // gap: "20px",              // Space between Grid and Keyboard
+  },
+  gridContainer: {
+    flex: 1, // Take up more space
+    minWidth: "20vw",
+    // minWidth: "300px", // Minimum width to prevent too small
+  },
+  keyboardContainer: {
+    flex: 0.1, // Take less space
+    minWidth: "15vw",
+    // minWidth: "200px",
+  },
+  definitionArea: {
+    flex: 2,
+    padding: "0.7vw",
+    // padding: "10px",
+    borderLeft: "0.1vw solid #000",
+    // borderLeft: "1px solid #000",
+    backgroundColor: "#f8f9fa",
+    fontSize: "2vw",
+    // fontSize: "16px",
+  },
+  heading: {
+    fontSize: "1.3vw",
+    // fontSize: "18px",
+    fontWeight: "bold",
+    marginBottom: "0.5vw",
+    // marginBottom: "10px",
+    color: "#333",
+  },
+  definitionBox: {
+    marginTop: "0.8vw",
+    // marginTop: "10px",
+    padding: "0.1vw",
+    // padding: "10px",
+    border: "0.1vw solid #333",
+    // border: "1px solid #333",
+    borderRadius: "0.3vw",
+    // borderRadius: "5px",
+    height: "auto",
+    overflowY: "auto",
+  },
+  definitionList: {
+    listStyleType: "bullet", // Use default bullet points | disc
+    paddingLeft: "2vw",
+    // paddingLeft: "20px",
+    fontSize: "1.2vw",
+    // fontSize: "16px",
+  },
 };
 
 export default WordCrazeGame;
