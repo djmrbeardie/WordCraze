@@ -3,7 +3,7 @@ const globalstyles = {
       flex: 1,
       padding: "1vw",
       // padding: "15px",
-      borderLeft: "0.1vw solid #ddd",
+      // borderLeft: "0.1vw solid #ddd",
       // borderLeft: "1px solid #ddd",
       backgroundColor: "#f8f9fa",
       display: "flex",
