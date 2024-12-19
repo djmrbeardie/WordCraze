@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useCallback} from "react";
 import Grid from "./Grid";
 import Keyboard from "./Keyboard";
 import { checkGuess } from "../utils/logic";
@@ -22,12 +22,8 @@ function WordCrazeGame({ animationTime }) {
   const { stats, setStats } = useStats();
   // const [points, setPoints] = useState(0); // Initialize points state
 
-  useEffect(() => {
-    fetchNewWord();
-  }, []);
-
   // Fetch word from API when the component is first rendered
-  async function fetchNewWord() {
+  const fetchNewWord = useCallback( async() => {
     try {
       const response = await fetch("https://random-word-api.vercel.app/api?words=1&length=5&type=uppercase");
 
@@ -53,9 +49,13 @@ function WordCrazeGame({ animationTime }) {
       console.error("Error fetching word:", err);
       setError(err.message);
     }
-  }
+  }, []);
 
-  const handleKeyPress = async (key) => {
+  useEffect(() => {
+    fetchNewWord();
+  }, [fetchNewWord]);
+
+  const handleKeyPress = useCallback( async (key) => {
     if (key === "Enter" && !gameOver) {
       if (currentGuess.length === 5) {
         const wordChecker = await checkWord(currentGuess);
@@ -117,7 +117,7 @@ function WordCrazeGame({ animationTime }) {
       setCurrentGuess(currentGuess + key.toUpperCase());
       setCellIndex((prevIndex) => Math.min(4, prevIndex + 1)); // Prevent going above index 4
     }
-  };
+  });
 
   const handleWin = (points) => {
     setGameOver(true);
@@ -175,7 +175,7 @@ function WordCrazeGame({ animationTime }) {
     return () => {
       window.removeEventListener("keydown", handlePhysicalKeyPress);
     };
-  }, [currentGuess]); // Include currentGuess to handle edge states properly
+  }, [currentGuess, handleKeyPress]); // Include currentGuess to handle edge states properly
 
   const showToast = (message) => {
     setToastMessage(message);

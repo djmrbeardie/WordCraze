@@ -1,16 +1,16 @@
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
 import WordCrazeGame from "./components/WordCrazeGame";
 import './styles/styles.css';
-import { GameStatsDisplay, useStats, saveStats } from "./components/GameStats";
+// import { GameStatsDisplay, useStats, saveStats } from "./components/GameStats";
 import React, { useState, useEffect } from "react";
-import Testing from './components/Testing';
+// import Testing from './components/Testing';
 
 
 function App() {
   const [showStartButton, setShowStartButton] = useState(true);
   const [animationTime] = useState(1000)
-  const {stats, setStats } = useStats();
+  // const {stats, setStats } = useStats();
 
 
   // Listen for keyboard events
