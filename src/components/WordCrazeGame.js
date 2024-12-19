@@ -98,7 +98,7 @@ function WordCrazeGame({ animationTime }) {
           }
           setCurrentGuess("");
           setCellIndex(0); // Prevent going below 0
-          showToast("Word: " + solution);
+          // showToast("Word: " + solution);
           setAnimateCells(true);
           setTimeout(() => {
             setAnimateCells(false);
@@ -131,7 +131,7 @@ function WordCrazeGame({ animationTime }) {
     setGameOver(true);
     setWin(false);
     saveStats({ won: false, stats, setStats, word: solution, points, guesses: guesses.length + 1 }); // Save stats with points
-    showToast("😔 You Lost! Word is: " + solution);
+    showToast("😔 You Lost! Word is " + solution);
   };
 
   const calculatePoints = () => {
