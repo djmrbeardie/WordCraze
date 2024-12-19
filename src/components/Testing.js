@@ -45,7 +45,7 @@ function Testing() {
       display: "flex",
       gap: "10px",
     },
-    nestedItem: {
+    nestedItems: {
       flex: "1",
       backgroundColor: "#FFC107",
       color: "#000",
@@ -76,8 +76,8 @@ function Testing() {
     <div style={styles.flexItem}>2</div>
     <div style={styles.flexItem}>
       <div style={styles.nestedContainer}>
-        <div style={styles.nestedItem}>A</div>
-        <div style={styles.nestedItem}>B</div>
+        <div style={styles.nestedItems}>A</div>
+        <div style={styles.nestedItems}>B</div>
       </div>
     </div>
     <div style={styles.flexItem}>4</div>
