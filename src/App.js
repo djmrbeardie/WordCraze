@@ -4,6 +4,7 @@ import WordCrazeGame from "./components/WordCrazeGame";
 import './styles/styles.css';
 import { GameStatsDisplay, useStats, saveStats } from "./components/GameStats";
 import React, { useState, useEffect } from "react";
+import Testing from './components/Testing';
 
 
 function App() {
@@ -43,6 +44,9 @@ function App() {
       
       {/* Include Game Stats Display */}
       {/* <GameStatsDisplay stats={stats}/> */}
+
+      {/* Testing  */}
+      {/* <Testing /> */}
 
       {showStartButton ? (
           <button onClick={handleStartGame} style={styles.startButton}>

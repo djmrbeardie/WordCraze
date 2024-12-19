@@ -5,8 +5,7 @@ import { checkGuess } from "../utils/logic";
 import { checkWord } from "../utils/wordValidation";
 import { GameStatsDisplay, useStats, saveStats } from "./GameStats";
 
-
-function WordCrazeGame({animationTime}) {
+function WordCrazeGame({ animationTime }) {
   const [guesses, setGuesses] = useState([]); // Array of attempted guesses
   const [currentGuess, setCurrentGuess] = useState("");
   const [solution, setSolution] = useState(""); // Solution word to guess
@@ -19,34 +18,31 @@ function WordCrazeGame({animationTime}) {
   const [shakeRowIndex, setShakeRowIndex] = useState(null);
   const [cellIndex, setCellIndex] = useState(null);
   const [animateCells, setAnimateCells] = useState(false);
-  const [definitions, setDefinitions] = useState(null)
-  const {stats, setStats } = useStats();
-
+  const [definitions, setDefinitions] = useState(null);
+  const { stats, setStats } = useStats();
+  // const [points, setPoints] = useState(0); // Initialize points state
 
   useEffect(() => {
     fetchNewWord();
   }, []);
 
-
   // Fetch word from API when the component is first rendered
   async function fetchNewWord() {
     try {
-    //   const response = await fetch("https://random-word-api.herokuapp.com/word?length=5"); //This API may give incorrect words, hence below handled incorrect words.
       const response = await fetch("https://random-word-api.vercel.app/api?words=1&length=5&type=uppercase");
-  
+
       if (!response.ok) {
         throw new Error("Failed to fetch word");
       }
-  
+
       const data = await response.json();
       if (Array.isArray(data) && data.length > 0) {
-        const wordChecker = await checkWord(data[0]); 
+        const wordChecker = await checkWord(data[0]);
 
-        if(wordChecker.isValid){
-            setSolution(data[0].toUpperCase());
-        }
-        else{
-            fetchNewWord();
+        if (wordChecker.isValid) {
+          setSolution(data[0].toUpperCase());
+        } else {
+          fetchNewWord();
         }
       } else {
         throw new Error("No word returned from API");
@@ -57,78 +53,99 @@ function WordCrazeGame({animationTime}) {
       console.error("Error fetching word:", err);
       setError(err.message);
     }
-  }      
+  }
 
   const handleKeyPress = async (key) => {
     if (key === "Enter" && !gameOver) {
-        if (currentGuess.length === 5) {
-            const wordChecker = await checkWord(currentGuess); 
+      if (currentGuess.length === 5) {
+        const wordChecker = await checkWord(currentGuess);
 
-            if (wordChecker.isValid) {
-                const result = checkGuess(solution, currentGuess);
-                const updatedGuessedLetters = { ...guessedLetters };
-                const definitions = wordChecker.data[0]?.meanings?.[0]?.definitions;
-                if (definitions) {
-                  setDefinitions(definitions);
-                } else {
-                  setDefinitions([]);
-                }
+        if (wordChecker.isValid) {
+          const result = checkGuess(solution, currentGuess);
+          const updatedGuessedLetters = { ...guessedLetters };
+          const definitions = wordChecker.data[0]?.meanings?.[0]?.definitions;
+          if (definitions) {
+            setDefinitions(definitions);
+          } else {
+            setDefinitions([]);
+          }
 
-                result.forEach((status, index) => {
-                    const letter = currentGuess[index];
-                    if (status === "correct") updatedGuessedLetters[letter] = "green";
-                    else if (status === "present" && !updatedGuessedLetters[letter]) updatedGuessedLetters[letter] = "yellow";
-                    else if (status === "absent" && !updatedGuessedLetters[letter]) updatedGuessedLetters[letter] = "gray";
-                    });
+          setGuessedLetters(updatedGuessedLetters);
+          setGuesses([...guesses, { guess: currentGuess, feedback: result }]);
 
-                setGuessedLetters(updatedGuessedLetters);
-                setGuesses([...guesses, { guess: currentGuess, feedback: result }]);
-
-                if (result.every(status => status === "correct")) {
-                    handleWin();
-                } else if (guesses.length + 1 >= 6) {
-                    handleLoss();
-                }
-                setCurrentGuess("");    
-                setCellIndex(0); // Prevent going below 0
-                showToast("Word: " + solution);
-                setAnimateCells(true);
-                setTimeout(() => {
-                    setAnimateCells(false);
-                  }, animationTime); // Wait for the animation
+          let currentPoints = 0;
+          result.forEach((status, index) => {
+            const letter = currentGuess[index];
+            if (status === "correct") {
+              updatedGuessedLetters[letter] = "green";
+              currentPoints += 3;
+            } else if (status === "present" && !updatedGuessedLetters[letter]) {
+              updatedGuessedLetters[letter] = "yellow";
+              currentPoints += 1;
+            } else if (status === "absent" && !updatedGuessedLetters[letter]) {
+              updatedGuessedLetters[letter] = "gray";
             }
-            else{
-                triggerShake();
-                showToast("Invalid word!");
-            }
+          });
+
+          if (result.every((status) => status === "correct")) {
+            const previousPoints = calculatePoints();
+            const remainingGuesses = 6 - (guesses.length + 1);
+            const bonusPoints = remainingGuesses * 15;
+            handleWin(previousPoints + currentPoints + bonusPoints);
+          } else if (guesses.length + 1 >= 6) {
+            const previousPoints = calculatePoints();
+            handleLoss(previousPoints + currentPoints);
+          }
+          setCurrentGuess("");
+          setCellIndex(0); // Prevent going below 0
+          showToast("Word: " + solution);
+          setAnimateCells(true);
+          setTimeout(() => {
+            setAnimateCells(false);
+          }, animationTime); // Wait for the animation
+        } else {
+          triggerShake();
+          showToast("Invalid word!");
+        }
       }
-    }
-    else if(key === "Enter" && gameOver){
+    } else if (key === "Enter" && gameOver) {
       restartGame();
-    }
-    else if (key === "Backspace") {
-      setCurrentGuess(currentGuess.slice(0, -1));    
-      setCellIndex(prevIndex => Math.max(0, prevIndex - 1)); // Prevent going below 0
+    } else if (key === "Backspace") {
+      setCurrentGuess(currentGuess.slice(0, -1));
+      setCellIndex((prevIndex) => Math.max(0, prevIndex - 1)); // Prevent going below 0
     } else if (currentGuess.length < 5 && /^[a-zA-Z]$/.test(key)) {
-        setCurrentGuess(currentGuess + key.toUpperCase());
-        setCellIndex(prevIndex => Math.min(4, prevIndex + 1)); // Prevent going above index 4
+      setCurrentGuess(currentGuess + key.toUpperCase());
+      setCellIndex((prevIndex) => Math.min(4, prevIndex + 1)); // Prevent going above index 4
     }
   };
 
-  const handleWin = () => {
+  const handleWin = (points) => {
     setGameOver(true);
     setWin(true);
+    saveStats({ won: true, stats, setStats, word: solution, points, guesses: guesses.length + 1 }); // Use totalPoints directly
     setCurrentGuess("");
-    saveStats({ won: true, stats, setStats });
     showToast("Congratulations! 🎉 You Won! 🎉");
   };
 
-  const handleLoss = () => {
+  const handleLoss = (points) => {
     setGameOver(true);
     setWin(false);
-    saveStats({ won: false, stats, setStats });
+    saveStats({ won: false, stats, setStats, word: solution, points , guesses: guesses.length + 1}); // Save stats with points
     showToast("😔 You Lost!");
   };
+
+  const calculatePoints = () => {
+    // Dynamically calculate total points after this guess and remaining guesses
+    const totalPoints = guesses.reduce((total, guess) => {
+      let pointsForEachGuess = 0;
+      guess.feedback.forEach((status) => {
+        if (status === "correct") pointsForEachGuess += 3;
+        if (status === "present") pointsForEachGuess += 1;
+      });
+      return total + pointsForEachGuess;
+    }, 0);
+    return totalPoints;
+  }
 
   const triggerShake = () => {
     setShakeRowIndex(guesses.length); // Trigger shake for the latest guess row
@@ -142,10 +159,9 @@ function WordCrazeGame({animationTime}) {
     setGuessedLetters({});
     setLoading(true);
     setDefinitions([]);
-
+    // setPoints(0);
     fetchNewWord();
   };
-
 
   // Listen for keyboard events
   useEffect(() => {
@@ -161,17 +177,13 @@ function WordCrazeGame({animationTime}) {
     };
   }, [currentGuess]); // Include currentGuess to handle edge states properly
 
-
   const showToast = (message) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(""), 3000); // Clear toast after 3 seconds
-
-    // alert(message); // Replace this with better toast handling later if needed
   };
 
   return (
     <div style={styles.container}>
-    
       {/* Toast Notification */}
       {toastMessage && (
         <div style={styles.toast}>
@@ -182,11 +194,18 @@ function WordCrazeGame({animationTime}) {
       <div style={styles.gameArea}>
         {loading && <p>Loading...</p>}
         {error && <p>Error: {error}</p>}
-        <Grid guesses={guesses} currentGuess={currentGuess} shakeRowIndex={shakeRowIndex} cellIndex={cellIndex} animateCells={animateCells} animationTime={animationTime} />
+        <Grid
+          guesses={guesses}
+          currentGuess={currentGuess}
+          shakeRowIndex={shakeRowIndex}
+          cellIndex={cellIndex}
+          animateCells={animateCells}
+          animationTime={animationTime}
+        />
         <Keyboard handleKeyPress={handleKeyPress} guessedLetters={guessedLetters} />
       </div>
 
-       {/* Right Sidebar for Definitions */}
+      {/* Right Sidebar for Definitions */}
       <div style={styles.definitionArea}>
         <h3>Word Definition: {guesses[guesses.length - 1]?.guess}</h3>
         <div style={styles.definitionBox}>
@@ -200,23 +219,21 @@ function WordCrazeGame({animationTime}) {
             <p>No definition available.</p>
           )}
         </div>
-      
-      {/* Include Game Stats Display */}
-      <GameStatsDisplay stats={stats}/>
-      
-      </div> 
+        {/* Include Game Stats Display */}
+        <GameStatsDisplay stats={stats} />
+      </div>
 
       {gameOver && (
         <div style={styles.modal}>
           <p>
             {win ? (
-                <>
+              <>
                 Congratulations! <br /> 🎉 You Won! 🎉
-                </>
+              </>
             ) : (
-                <>
+              <>
                 😔 You Lost! 😔
-                </>
+              </>
             )}
           </p>
           <button onClick={restartGame} style={styles.button}>
@@ -226,7 +243,6 @@ function WordCrazeGame({animationTime}) {
       )}
     </div>
   );
-   
 }
 
 const styles = {
